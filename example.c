@@ -28,15 +28,17 @@ void main(int argc, char**argv){
 
    initialize();
 
-   #pragma acc parallel
+  
    while (dt > MAX_TEMP_ERROR && iteration <= max_iterations){
-     for (i = 1; i<= ROWS; i++){
+      #pragma acc kernels
+      for (i = 1; i<= ROWS; i++){
        for (j = 1; j<= COLS; j++){
          temperature[i][j] = 0.25 * (temperature_last[i+1][j] + temperature_last[i-1][j] + 
                                      temperature_last[i][j+1] + temperature_last[i][j-1]);
        }
      }
      dt =0.0;
+     #pragma acc kernels
      for (i = 1; i<= ROWS; i++){
        for (j = 1; j<= COLS; j++){
          dt = fmax( fabs(temperature[i][j]-temperature_last[i][j]), dt);
@@ -45,7 +47,7 @@ void main(int argc, char**argv){
      }
 
      if ((iteration %100 ) == 0){
-       //track_progress(iteration);
+       track_progress(iteration);
      }
 
      iteration++;
