@@ -16,20 +16,20 @@ void track_progress(int iter);
 
 void main(int argc, char**argv){
    int i , j;
-   int max_iterations;
+   int max_iterations = 4000;
    int iteration=1;
    double dt=100;
    struct timeval start_time, stop_time, elapsed_time;
    
-   printf("Maximum iterations ?\n");
-   scanf("%d" , &max_iterations);
+   //printf("Maximum iterations ?\n");
+   //scanf("%d" , &max_iterations);
 
    gettimeofday(&start_time, NULL);
 
    initialize();
 
-   #pragma acc parallel
    while (dt > MAX_TEMP_ERROR && iteration <= max_iterations){
+     #pragma acc kernels
      for (i = 1; i<= ROWS; i++){
        for (j = 1; j<= COLS; j++){
          temperature[i][j] = 0.25 * (temperature_last[i+1][j] + temperature_last[i-1][j] + 
@@ -37,6 +37,7 @@ void main(int argc, char**argv){
        }
      }
      dt =0.0;
+     #pragma acc kernels
      for (i = 1; i<= ROWS; i++){
        for (j = 1; j<= COLS; j++){
          dt = fmax( fabs(temperature[i][j]-temperature_last[i][j]), dt);
@@ -45,7 +46,7 @@ void main(int argc, char**argv){
      }
 
      if ((iteration %100 ) == 0){
-       //track_progress(iteration);
+       track_progress(iteration);
      }
 
      iteration++;
@@ -54,7 +55,7 @@ void main(int argc, char**argv){
    gettimeofday(&stop_time, NULL);
    timersub(&stop_time, &start_time, &elapsed_time);
    printf("\nMax error at iteration %d was %f\n" , iteration-1, dt);
-   printf("Total time was %f seconds.\n", (elapsed_time.tv_sec + (elapsed_time.tv_usec/1000000)));
+   printf("Total time was %d %f seconds.\n", elapsed_time.tv_sec, ((float)elapsed_time.tv_sec + ((float)elapsed_time.tv_usec/1000000.0f)));
    exit(0);
 }
 
@@ -82,7 +83,7 @@ void track_progress(int iteration){
 
   int i ;
   printf("---------- Iteration number: %d -------------\n", iteration);
-  for (i = ROWS-5; i<= ROWS; i++){
+  for (i = ROWS-5; i<= ROWS; i=i+2){
     printf("[%d,%d]: %5.2f    ", i,i, temperature[i][i]);
   }
   printf("\n");
