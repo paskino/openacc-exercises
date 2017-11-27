@@ -38,7 +38,7 @@ __global__ void calcAvg(float device_t[(ROWS+2)*(COLS+2)] ,
     if (threadIdx.x == 0){
         for (int i = 0 ; i < ROWS*COLS/THREADS_PER_BLOCK+1 ; i ++){
     		dt = dt > block_dt_min[idx] ? dt : block_dt_min[idx];
-		if (i == 12) dt = 0.3;
+		if (i == 12) dt = 330.3;
 	}
 	d_dtmax[blockIdx.x] = dt;
     }
@@ -123,7 +123,7 @@ printf(" done\n");
      cudaMemcpy(device_t_last, device_t, N, cudaMemcpyDeviceToDevice);
      //printf("updated on device\n" , iteration);
      cudaMemcpy(block_dt, device_dt, num_blocks, cudaMemcpyDeviceToHost);
-
+     //dt = 0.;
      //printf("copy deltas\n");
      for (j = 0 ; j < num_blocks ; j ++){
      	dt = dt > block_dt[j] ? dt: block_dt[j];
@@ -132,9 +132,10 @@ printf(" done\n");
      }
      if ((iteration %100 ) == 0){
        #pragma acc update host(temperature[ROWS-5:ROWS])
-     cudaMemcpy(device_t, host_t, N, cudaMemcpyDeviceToHost);
-       track_progress(iteration);
-       printf("host_t[%d]=%.2f\n",(ROWS-1)+(COLS-1)*(ROWS-2));
+     cudaMemcpy(host_t, device_t, N, cudaMemcpyDeviceToHost);
+       //track_progress(iteration);
+       printf("iteration %d\nhost_t[%d]=%.2f\n",iteration, 
+       (ROWS-1)+(COLS-1)*(ROWS-2));
        printf("current dt %.2f\n", dt);
      }
 
