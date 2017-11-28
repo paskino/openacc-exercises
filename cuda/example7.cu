@@ -10,8 +10,10 @@
 #define MAX_TEMP_ERROR 0.01
 
 #define THREADS_PER_BLOCK 128
-double temperature[ROWS+2][COLS+2];
-double temperature_last[ROWS+2][COLS+2];
+//double temperature[ROWS+2][COLS+2];
+//double temperature_last[ROWS+2][COLS+2];
+double temperature[(ROWS+2)*(COLS+2)];
+double temperature_last[(ROWS+2)*(COLS+2)];
 
 void initialize();
 void track_progress(int iter);
@@ -135,7 +137,7 @@ printf(" done\n");
      cudaMemcpy(host_t, device_t, N, cudaMemcpyDeviceToHost);
        //track_progress(iteration);
        printf("iteration %d\nhost_t[%d]=%.2f\n",iteration, 
-       (ROWS-1)+(COLS-1)*(ROWS-2));
+       (ROWS-1)+(COLS-1)*(ROWS-2), host_t[(ROWS-1)+(COLS-1)*(ROWS-2)]);
        printf("current dt %.2f\n", dt);
      }
 
@@ -151,21 +153,31 @@ printf(" done\n");
 }
 
 void initialize(){
-     int i,j;
+     int i,j, idx;
      for (i = 0; i<= ROWS; i++){
        for (j = 0; j<= COLS; j++){
-         temperature_last[i][j] = 0.0; 
+         idx = i + ROWS*j;
+         //temperature_last[i][j] = 0.0; 
+         temperature_last[idx] = 0.0; 
        }
      }
      // boundary condition
      
      for (i = 0; i<= ROWS; i++){
-       temperature_last[i][0] = 0.0;
-       temperature_last[i][COLS+1] = (100.0/ROWS)*i;
+       idx = i;
+       //temperature_last[i][0] = 0.0;
+       temperature_last[idx] = 0.0;
+       idx = i + ROWS*(COLS+1);
+       //temperature_last[i][COLS+1] = (100.0/ROWS)*i;
+       temperature_last[idx] = (100.0/ROWS)*i;
      }
      for (j = 0; j<= COLS; j++){
-       temperature_last[0][j] = 0.0;
-       temperature_last[ROWS+1][j] = (100.0/COLS)*j;
+       idx = j* ROWS;
+       //temperature_last[0][j] = 0.0;
+       temperature_last[idx] = 0.0;
+       idx = ROWS+1 + ROWS * j;
+       //temperature_last[ROWS+1][j] = (100.0/COLS)*j;
+       temperature_last[idx] = (100.0/COLS)*j;
      }
 }
 
@@ -175,7 +187,7 @@ void track_progress(int iteration){
   int i ;
   printf("---------- Iteration number: %d -------------\n", iteration);
   for (i = ROWS-5; i<= ROWS; i=i+2){
-    printf("[%d,%d]: %5.2f    ", i,i, temperature[i][i]);
+    printf("[%d,%d]: %5.2f    ", i,i, temperature[i+ROWS*i]);
   }
   printf("\n");
 }
