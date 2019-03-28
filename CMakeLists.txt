@@ -17,3 +17,4 @@ target_compile_options(ex5 PRIVATE "${OpenACC_C_FLAGS}")
 target_link_libraries(ex5 PRIVATE ${OpenACC_CXX_FLAGS})
 
 # run as ACC_DEVICE_TYPE=host ./ex5
+# https://gcc.gnu.org/wiki/OpenACC#ACC_DEVICE_TYPE means it will run single threaded
